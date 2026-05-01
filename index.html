@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ふしぎボタン | Pinda Lab</title>
+<meta name="description" content="押すたびに違うことが起こる、ふしぎなボタン。何回押せる?">
+<meta property="og:title" content="ふしぎボタン">
+<meta property="og:description" content="押すたびに違うことが起こる ふしぎなボタン">
+<meta property="og:url" content="https://pndshch.github.io/fushigi-button/">
+<meta name="twitter:card" content="summary">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body, html { height: 100%; overflow: hidden; }
+body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: background 0.5s;
+    position: relative;
+}
+.topbar {
+    position: absolute;
+    top: 12px; left: 12px; right: 12px;
+    display: flex; justify-content: space-between;
+    color: #6d7680; font-size: 12px;
+    z-index: 100;
+}
+.topbar a { color: #6d7680; text-decoration: none; }
+
+.counter {
+    position: absolute;
+    top: 50px;
+    background: rgba(255,255,255,0.08);
+    padding: 6px 16px;
+    border-radius: 24px;
+    font-size: 13px;
+    color: #fff;
+    font-weight: 700;
+}
+.counter strong { color: #facc15; font-variant-numeric: tabular-nums; }
+
+.button-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#btn {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 8px solid #fff;
+    background: linear-gradient(135deg, #ec4899, #ef4444);
+    color: #fff;
+    font-size: 36px;
+    font-weight: 900;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 12px 40px rgba(236,72,153,0.5), inset 0 -8px 16px rgba(0,0,0,0.3);
+    transition: transform 0.1s, box-shadow 0.1s, background 0.4s;
+    z-index: 10;
+}
+#btn:active {
+    transform: scale(0.92);
+    box-shadow: 0 4px 16px rgba(236,72,153,0.4), inset 0 -2px 4px rgba(0,0,0,0.3);
+}
+
+#message {
+    position: absolute;
+    top: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    font-weight: 800;
+    text-align: center;
+    color: #fff;
+    background: rgba(0,0,0,0.5);
+    padding: 10px 20px;
+    border-radius: 20px;
+    max-width: 80vw;
+    opacity: 0;
+    transition: opacity 0.3s;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    z-index: 50;
+}
+#message.show { opacity: 1; }
+
+.fx {
+    position: absolute;
+    pointer-events: none;
+    inset: 0;
+    overflow: hidden;
+    z-index: 5;
+}
+.fx-emoji {
+    position: absolute;
+    font-size: 60px;
+    pointer-events: none;
+    transition: transform 1.5s ease-out, opacity 1.5s ease-out;
+    will-change: transform;
+}
+
+.actions {
+    position: absolute;
+    bottom: 24px;
+    display: flex; gap: 8px;
+    z-index: 100;
+}
+.btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.btn-share { background: #1d9bf0; }
+
+body.bg-pink { background: radial-gradient(circle at 50% 50%, #fce7f3 0%, #ec4899 100%); }
+body.bg-blue { background: radial-gradient(circle at 50% 50%, #dbeafe 0%, #2563eb 100%); }
+body.bg-yellow { background: radial-gradient(circle at 50% 50%, #fef3c7 0%, #f59e0b 100%); }
+body.bg-green { background: radial-gradient(circle at 50% 50%, #d1fae5 0%, #16a34a 100%); }
+body.bg-purple { background: radial-gradient(circle at 50% 50%, #f3e8ff 0%, #7c3aed 100%); }
+body.bg-red { background: radial-gradient(circle at 50% 50%, #fee2e2 0%, #dc2626 100%); }
+body.bg-night { background: linear-gradient(180deg, #1e3a8a 0%, #0c0a1e 100%); }
+body.bg-rainbow {
+    background: linear-gradient(180deg, #ef4444, #f59e0b, #facc15, #10b981, #3b82f6, #8b5cf6);
+}
+
+#btn.shape-square { border-radius: 12px; }
+#btn.shape-blob { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+#btn.huge { width: 320px; height: 320px; font-size: 48px; }
+#btn.tiny { width: 80px; height: 80px; font-size: 18px; }
+#btn.flat { height: 60px !important; border-radius: 30px; width: 240px; }
+
+.footer {
+    position: absolute;
+    bottom: 8px;
+    color: #6d7680; font-size: 11px;
+}
+.footer a { color: #6d7680; text-decoration: none; }
+</style>
+</head>
+<body id="body">
+<div class="topbar">
+    <a href="https://pndshch.github.io/">← Pinda Lab</a>
+    <span>ふしぎボタン</span>
+</div>
+
+<div class="counter">おしたかいすう <strong id="count">0</strong></div>
+
+<div id="message"></div>
+
+<div class="fx" id="fx"></div>
+
+<div class="button-wrap">
+    <button id="btn">おす</button>
+</div>
+
+<div class="actions">
+    <button class="btn btn-share" id="share">𝕏 にシェア</button>
+</div>
+
+<div class="footer">
+    <a href="https://pndshch.github.io/">© Pinda Lab</a>
+</div>
+
+<script>
+'use strict';
+const STORAGE = 'pl-fushigi-count';
+let count = 0;
+try { count = parseInt(localStorage.getItem(STORAGE)) || 0; } catch {}
+
+const body = document.getElementById('body');
+const btn = document.getElementById('btn');
+const msg = document.getElementById('message');
+const fx = document.getElementById('fx');
+
+const BG_CLASSES = ['bg-pink','bg-blue','bg-yellow','bg-green','bg-purple','bg-red','bg-night','bg-rainbow'];
+const SHAPE_CLASSES = ['shape-square','shape-blob','huge','tiny','flat'];
+const BTN_LABELS = ['おす','プッシュ','タップ','PUSH','ぽちっ','むぎゅ','どん','ぐっ','ボタン','OK','▶','💥','😀','✋','🤖'];
+
+const RAIN_EMOJIS = {
+    food: ['🍎','🍌','🍕','🍩','🍙','🍦','🍰','🍓'],
+    animal: ['🐶','🐱','🐰','🐻','🐸','🐧','🦊','🐼'],
+    space: ['🌟','⭐','🚀','🛸','🪐','🌙','☄️','🛰️'],
+    weather: ['☀️','⛈️','❄️','🌪️','⚡','🌈','☁️','🌧️'],
+    chaos: ['🦄','🦖','🤡','💩','👽','🎃','👻','🎉'],
+    nature: ['🌸','🍃','🌺','🌻','🌷','🍀','🍂','🌹'],
+};
+
+const QUOTES = [
+    'ふしぎ!','すごい!','びっくり!','なんと!','おお!','うほー!','すばらしい!',
+    'まさかの…','こんなことが…','こうなるとは…','はちゃめちゃ!','ねこ?',
+    'これは…!','よくぞ おしました!','まだまだ!','つぎは どうなる?',
+    'やったー!','なるほど?','ふむふむ','うん!',
+];
+
+const ACTIONS = [
+    () => randomBg(),
+    () => randomBg(),
+    () => randomShape(),
+    () => randomLabel(),
+    () => emojiRain('food', 12),
+    () => emojiRain('animal', 12),
+    () => emojiRain('space', 18),
+    () => emojiRain('weather', 16),
+    () => emojiRain('chaos', 10),
+    () => emojiRain('nature', 14),
+    () => spinBtn(),
+    () => growBtn(),
+    () => shrinkBtn(),
+    () => doNothing(),
+    () => message('🎵 ぽろろ〜ん 🎵'),
+    () => message('しーん…'),
+    () => message('ボタンが かんがえている'),
+    () => message('もう やめよう?'),
+    () => message('もう一回!'),
+    () => message('100% さいこう!'),
+    () => message('99% ふつう'),
+    () => message('1% うんちはイヤ'),
+    () => message('えっ?'),
+    () => message('わー!'),
+    () => message('きょうは いい日!'),
+    () => bigShake(),
+    () => message('ボタンが おどってる'),
+    () => emojiRain('chaos', 30),
+    () => message('スーパーボタン!'),
+    () => message('ちょっと きゅうけい'),
+];
+
+function randomBg() {
+    BG_CLASSES.forEach(c => body.classList.remove(c));
+    body.classList.add(BG_CLASSES[Math.floor(Math.random() * BG_CLASSES.length)]);
+}
+function randomShape() {
+    SHAPE_CLASSES.forEach(c => btn.classList.remove(c));
+    if (Math.random() < 0.7) {
+        btn.classList.add(SHAPE_CLASSES[Math.floor(Math.random() * SHAPE_CLASSES.length)]);
+    }
+}
+function randomLabel() {
+    btn.textContent = BTN_LABELS[Math.floor(Math.random() * BTN_LABELS.length)];
+}
+function spinBtn() {
+    btn.style.transition = 'transform 0.6s';
+    btn.style.transform = `rotate(${Math.random()*720 - 360}deg)`;
+    setTimeout(() => {
+        btn.style.transition = 'transform 0.1s, box-shadow 0.1s, background 0.4s';
+        btn.style.transform = '';
+    }, 600);
+}
+function growBtn() {
+    btn.classList.remove('tiny','flat');
+    btn.classList.toggle('huge');
+}
+function shrinkBtn() {
+    btn.classList.remove('huge','flat');
+    btn.classList.toggle('tiny');
+}
+function bigShake() {
+    btn.style.animation = 'none';
+    void btn.offsetWidth;
+    btn.style.animation = 'shake-big 0.6s';
+    if (!document.getElementById('shake-style')) {
+        const s = document.createElement('style');
+        s.id = 'shake-style';
+        s.textContent = '@keyframes shake-big { 0%,100%{transform:translate(0)} 10%{transform:translate(-12px,8px) rotate(-5deg)} 30%{transform:translate(14px,-6px) rotate(6deg)} 50%{transform:translate(-10px,-12px) rotate(-4deg)} 70%{transform:translate(8px,10px) rotate(5deg)} 90%{transform:translate(-6px,4px) rotate(-2deg)} }';
+        document.head.appendChild(s);
+    }
+}
+function doNothing() {
+    message('…なにもおこらない');
+}
+function message(t) {
+    msg.textContent = t;
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 1500);
+}
+function emojiRain(category, n) {
+    const set = RAIN_EMOJIS[category];
+    for (let i = 0; i < n; i++) {
+        const e = document.createElement('div');
+        e.className = 'fx-emoji';
+        e.textContent = set[Math.floor(Math.random() * set.length)];
+        e.style.left = (Math.random() * 100) + 'vw';
+        e.style.top = '-80px';
+        e.style.fontSize = (40 + Math.random() * 40) + 'px';
+        fx.appendChild(e);
+        const fall = window.innerHeight + 200;
+        const drift = (Math.random() - 0.5) * 200;
+        const rot = (Math.random() - 0.5) * 720;
+        requestAnimationFrame(() => {
+            e.style.transform = `translate(${drift}px, ${fall}px) rotate(${rot}deg)`;
+            e.style.opacity = '0';
+        });
+        setTimeout(() => e.remove(), 1600);
+    }
+}
+
+function press() {
+    count++;
+    document.getElementById('count').textContent = count;
+    try { localStorage.setItem(STORAGE, String(count)); } catch {}
+
+    // do 1 or 2 random actions for chaos
+    const n = Math.random() < 0.4 ? 2 : 1;
+    for (let i = 0; i < n; i++) {
+        ACTIONS[Math.floor(Math.random() * ACTIONS.length)]();
+    }
+    if (Math.random() < 0.5 && msg.classList.contains('show') === false) {
+        message(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+    }
+}
+
+btn.addEventListener('click', press);
+document.getElementById('share').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const txt = `ふしぎボタンを ${count}回 おしました 🔘\nおすたびに 違うことが起こる ボタンです`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}&url=${encodeURIComponent('https://pndshch.github.io/fushigi-button/')}`, '_blank', 'noopener');
+});
+
+document.getElementById('count').textContent = count;
+</script>
+</body>
+</html>
